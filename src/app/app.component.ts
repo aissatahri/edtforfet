@@ -214,9 +214,7 @@ export class AppComponent {
     for (const s of (this.parsed?.subgroups || [])) {
       const fullName = s.name || s['@name'] || '';
       if (fullName) {
-        // Extract base name (remove :G1, :G2, etc.)
-        const baseName = fullName.includes(':') ? fullName.split(':')[0] : fullName;
-        classesSet.add(baseName);
+        classesSet.add(this.getBaseClassName(fullName));
       }
     }
     this.classesList = Array.from(classesSet).sort();
@@ -327,6 +325,15 @@ export class AppComponent {
   
   closeSuccessModal() {
     this.showSuccessModal = false;
+  }
+  
+  /**
+   * Base class name of a subgroup: removes the group part ("3APIC-3:G1" -> "3APIC-3")
+   * and the suffix FET adds to automatic subgroups ("1APIC-1 مجموعات فرعية تلقائية" -> "1APIC-1")
+   */
+  getBaseClassName(fullName: string): string {
+    const baseName = fullName.includes(':') ? fullName.split(':')[0] : fullName;
+    return baseName.replace(/\s+(مجموعات فرعية تلقائية|automatic subgroups?)$/i, '').trim();
   }
   
   getDisplayName(type: 'teacher' | 'room' | 'class', originalName: string): string {
@@ -1561,8 +1568,7 @@ export class AppComponent {
       // e.g., if selectedEntity is "3APIC-3", find "3APIC-3", "3APIC-3:G1", "3APIC-3:G2"
       sourcesData = (this.parsed?.subgroups || []).filter((s: any) => {
         const fullName = s.name || s['@name'] || '';
-        const baseName = fullName.includes(':') ? fullName.split(':')[0] : fullName;
-        return baseName === this.selectedEntity;
+        return this.getBaseClassName(fullName) === this.selectedEntity;
       });
     } else if (this.entityMode === 'room') {
       // Build timetable for the selected room from all activities

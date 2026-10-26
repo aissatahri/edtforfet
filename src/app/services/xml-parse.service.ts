@@ -288,8 +288,9 @@ export class XmlParseService {
     for (let i = 0; i < constraintNodes.length; i++) {
       const constraint = constraintNodes[i];
       const activityId = Number(this.textOf(constraint, 'Activity_Id')) || null;
-      const day = this.textOf(constraint, 'Preferred_Day') || '';
-      const hour = this.textOf(constraint, 'Preferred_Hour') || '';
+      // FET 5.x uses Preferred_Day/Preferred_Hour, FET 7.x uses Day/Hour
+      const day = this.textOf(constraint, 'Preferred_Day') || this.textOf(constraint, 'Day') || '';
+      const hour = this.textOf(constraint, 'Preferred_Hour') || this.textOf(constraint, 'Hour') || '';
       const active = this.textOf(constraint, 'Active') === 'true';
       
       if (active && activityId && day && hour) {
