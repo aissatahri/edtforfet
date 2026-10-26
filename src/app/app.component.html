@@ -29,6 +29,11 @@
     <div class="upload-section">
       <app-import (parsedChange)="onParsed($event)"></app-import>
     </div>
+    
+    <!-- Data saved by an older version of the parser -->
+    <div class="notice notice-warning" *ngIf="parsed && staleDataWarning">
+      ⚠️ البيانات المحفوظة تم تحليلها بنسخة سابقة من التطبيق. المرجو إعادة استيراد الملف لعرض الجداول بشكل صحيح.
+    </div>
 
     <!-- Controls container - BELOW - Only show after successful import -->
     <div class="controls-container" *ngIf="parsed">
@@ -357,6 +362,8 @@
     <!-- Regular timetable -->
     <div *ngIf="parsed && processedDays.length && isEntityView">
       <div class="school-year-header">الموسم الدراسي {{ config.schoolYear }}</div>
+      
+      <div class="notice" *ngIf="selectedEntity && !hasAnyCourse">ℹ️ لا توجد حصص مسندة لهذا العنصر في الملف المستورد.</div>
       
       <!-- Timetable table -->
       <table>

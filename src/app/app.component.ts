@@ -34,6 +34,11 @@ export class AppComponent {
   statsSortDesc: boolean = true;
   entitySearch: string = ''; // Quick search filter for the entity selector
   
+  // Bump when the parser output changes, so data saved by an older version asks for a re-import
+  readonly PARSER_VERSION = '2';
+  staleDataWarning: boolean = false;
+  private restoringFromStorage = false;
+  
   // Success Modal
   showSuccessModal: boolean = false;
   successMessage: string = '';
@@ -246,6 +251,11 @@ export class AppComponent {
     try {
       localStorage.setItem('fet_parsed_data', JSON.stringify(this.parsed));
       localStorage.setItem('fet_config', JSON.stringify(this.config));
+      // Only a fresh import is parsed with the current parser version
+      if (!this.restoringFromStorage) {
+        localStorage.setItem('fet_parser_version', this.PARSER_VERSION);
+        this.staleDataWarning = false;
+      }
       console.log('Data saved to localStorage');
     } catch (e) {
       console.error('Error saving to localStorage:', e);
@@ -273,8 +283,14 @@ export class AppComponent {
       
       if (savedData) {
         this.parsed = JSON.parse(savedData);
+        this.staleDataWarning = localStorage.getItem('fet_parser_version') !== this.PARSER_VERSION;
         // Rebuild all lists
-        this.onParsed(this.parsed);
+        this.restoringFromStorage = true;
+        try {
+          this.onParsed(this.parsed);
+        } finally {
+          this.restoringFromStorage = false;
+        }
         console.log('Data loaded from localStorage');
       }
     } catch (e) {
@@ -286,6 +302,8 @@ export class AppComponent {
     if (confirm('هل أنت متأكد من حذف جميع البيانات المحفوظة؟')) {
       localStorage.removeItem('fet_parsed_data');
       localStorage.removeItem('fet_config');
+      localStorage.removeItem('fet_parser_version');
+      this.staleDataWarning = false;
       this.parsed = null;
       // Reset to full defaults (keeps pdfFont and header lines defined for PDF export)
       this.config = this.createDefaultConfig();
@@ -1768,6 +1786,11 @@ export class AppComponent {
 
       this.processedDays.push({ day: dayLabels[baseDayName] || baseDayName, cells });
     }
+  }
+
+  // True when the displayed timetable contains at least one course
+  get hasAnyCourse(): boolean {
+    return this.processedDays.some(pd => pd.cells.some((c: any) => c.cells && c.cells.length > 0));
   }
 
   // Check if all cells in the array are identical (same subject, teacher, room)

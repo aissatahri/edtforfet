@@ -206,3 +206,13 @@ body.dark-mode table.stats-table td.stat-warning {
 	background: #4a3b10 !important;
 	color: #ffcf70;
 }
+
+body.dark-mode .notice {
+	background: #0f3460;
+	color: #cfe3ff;
+}
+
+body.dark-mode .notice-warning {
+	background: #4a3b10;
+	color: #ffcf70;
+}
